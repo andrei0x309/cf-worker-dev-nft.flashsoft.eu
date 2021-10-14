@@ -58,6 +58,11 @@ const testGetAssetFn = async () => {
   console.log(await getReq);
 };
 
+const testGetDBtFn = async () => {
+  const getReq = await getData(`${endpointUrl}/get-db`);
+  console.log(await getReq);
+};
+
 (async _ => {
-  testGetAssetFn();
+  testGetDBtFn();
 })();

@@ -32,7 +32,7 @@ const getAsset = async assetId => {
 
 const getDB = async _ => {
   const resource = await nft.get('nftdb');
-  if (asset === null) {
+  if (resource === null) {
     return new Response('Resource not found', { status: 404 });
   }
   return new Response(JSON.stringify(resource), {
