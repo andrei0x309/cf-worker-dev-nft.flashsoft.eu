@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 const ENV = dotenv.config();
 const devWorkerUrl = `http://127.0.0.1:8787`;
-const prodWorkerUrl = ENV.WORKER_URL;
+const prodWorkerUrl = ENV.parsed.WORKER_URL;
 
 const nodeArgs = process.argv.slice(2);
 
@@ -17,11 +17,11 @@ async function postData(url = '', data = {}) {
     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
     headers: {
       'Content-Type': 'application/json',
-      [PRESHARED_AUTH_HEADER_KEY]: ENV.ADMIN_TOKEN,
+      [PRESHARED_AUTH_HEADER_KEY]: ENV.parsed.ADMIN_TOKEN,
     },
     body: JSON.stringify(data),
   });
-  return response.text();
+  return response;
 }
 
 async function getData(url = '') {
@@ -33,7 +33,7 @@ async function getData(url = '') {
       'Content-Type': 'application/json',
     },
   });
-  return response.json();
+  return response;
 }
 
 const addWholeDBFn = async () => {
@@ -53,16 +53,41 @@ const addDbFn = async () => {
   }
 };
 
-const testGetAssetFn = async () => {
-  const getReq = await getData(`${endpointUrl}/get-asset/95d6681c7c2385b75d6b76ee1ca5`);
-  console.log(await getReq);
+const addDBasset = async asset => {
+  const data = JSON.stringify(asset);
+  await postData(`${endpointUrl}/add-db-asset`, data);
+};
+
+const testGetAssetFn = async assetId => {
+  const getReq = await getData(`${endpointUrl}/get-asset/${assetId}`);
+  return getReq;
 };
 
 const testGetDBtFn = async () => {
   const getReq = await getData(`${endpointUrl}/get-db`);
-  console.log(await getReq);
+  return getReq;
+};
+
+const testAndAddDBassetFn = async () => {
+  const { default: data } = await import('./db/nft.mjs');
+
+  for (const el of data) {
+    if (!(await testGetAssetFn(el.id)).ok) {
+      await addDBasset(el);
+      console.log(`Added asset ${el.id}`);
+    }
+  }
+};
+
+const testOverwiteAllAssets = async () => {
+  const { default: data } = await import('./db/nft.mjs');
+
+  for (const el of data) {
+    await addDBasset(el);
+    console.log(`Overwritten asset ${el.id}`);
+  }
 };
 
 (async _ => {
-  testGetDBtFn();
+  await testOverwiteAllAssets();
 })();

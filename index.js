@@ -70,6 +70,18 @@ const addDbFiveAtATime = async request => {
   });
 };
 
+const addDbAsset = async request => {
+  requireAuth(request);
+  const data = JSON.parse(await request.json());
+  nft.put(data.id, JSON.stringify(data));
+  return new Response(JSON.stringify({ ok: 'ok' }), {
+    status: 201, // Created
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request));
 });
@@ -95,6 +107,10 @@ async function handleRequest(request) {
 
   if (uriSegments[0] === 'add-db-five') {
     return await addDbFiveAtATime(request);
+  }
+
+  if (uriSegments[0] === 'add-db-asset') {
+    return await addDbAsset(request, uriSegments[1]);
   }
 
   return new Response(
